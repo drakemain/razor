@@ -2,28 +2,26 @@ import * as mongo from 'mongodb';
 
 const dbPath = 'mongodb://localhost:27017/razor';
 
-export async function hash(url: string): Promise<string> {
-    return (async (): Promise<string> => {
-        const client = await mongo.MongoClient.connect(dbPath, {useNewUrlParser: true});
-        const db = client.db();
-        const collection = db.collection('urls');
-        let hash: string;
+export const hash = async (url: string): Promise<string> => {
+    const client = await mongo.MongoClient.connect(dbPath, {useNewUrlParser: true});
+    const db = client.db();
+    const collection = db.collection('urls');
+    let hash: string;
 
-        try {
-            hash = await fetch(url, collection);
+    try {
+        hash = await fetch(url, collection);
 
-            if (!hash) {
-                hash = await insert(url, collection);
-            }
-        } catch (e) {
-            console.error(e);
-        } finally {
-            client.close();
+        if (!hash) {
+            hash = await insert(url, collection);
         }
+    } catch (e) {
+        console.error(e);
+    } finally {
+        client.close();
+    }
 
-        return hash;
-    })();
-}
+    return hash;
+};
 
 const fetch = async (url: string, collection: mongo.Collection): Promise<string> => {
     return (async (): Promise<string> => {
