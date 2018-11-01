@@ -4,6 +4,8 @@ import * as express from 'express';
 import * as bParse from 'body-parser';
 import * as md5 from 'md5';
 
+import { hash } from './hash';
+
 const app = express();
 const port = 3000;
 
@@ -18,13 +20,15 @@ app.post('/sharpen', (req, res) => {
 
     const endpoint: string = 'http://localhost:3000/blade';
     const url: string = req.body.url;
-    const hash: string = md5(url);
 
-    const blade = endpoint + '?' + querystring.stringify({url, hash});
+    (async () => {
+        const hashedUrl = await hash(url);
+        const blade = endpoint + '?' + querystring.stringify({url, hash: hashedUrl});
 
-    console.log(blade);
+        console.log(blade);
 
-    res.redirect(302, blade);
+        res.redirect(302, blade);
+    })();
 });
 
 app.post('/blade', (req, res) => {
