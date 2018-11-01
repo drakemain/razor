@@ -2,7 +2,6 @@ import * as querystring from 'querystring';
 
 import * as express from 'express';
 import * as bParse from 'body-parser';
-import * as md5 from 'md5';
 
 import { hash } from './hash';
 
@@ -16,8 +15,6 @@ app.get('/', (req, res) => {
 });
 
 app.post('/sharpen', (req, res) => {
-    console.log('sharpen');
-
     const endpoint: string = 'http://localhost:3000/blade';
     const url: string = req.body.url;
 

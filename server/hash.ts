@@ -13,7 +13,6 @@ export async function hash(url: string): Promise<string> {
             hash = await fetch(url, collection);
 
             if (!hash) {
-                console.log('no existing entry found');
                 hash = await insert(url, collection);
             }
         } catch (e) {
@@ -39,8 +38,6 @@ const fetch = async (url: string, collection: mongo.Collection): Promise<string>
 };
 
 const insert = async (url: string, collection: mongo.Collection): Promise<string> => {
-    console.log('created new entry');
-
     return (async (): Promise<string> => {
             const result = await collection.insertOne({url});
             return result.insertedId.toString();
