@@ -3,6 +3,7 @@ import * as path from 'path';
 import * as express from 'express';
 import * as bParse from 'body-parser';
 import * as expressHB from 'express-handlebars';
+import * as validurl from 'valid-url';
 
 import { hash, getUrl as resHash } from './hash';
 
@@ -87,26 +88,23 @@ app.get('/b/:hash', (req, res) => {
 });
 
 app.post('/sharpen', (req, res) => {
-    let url: string = req.body.url;
+    const url: string = req.body.url;
     let hashedUrl: string;
 
-    // TODO: allow for non-http protocols (regex?)
-    if (url.slice(0, 7) !== 'http://' || url.slice(0, 8) !== 'https://') {
-        url = 'http://' + url;
+    if (validurl.isHttpUri(url) || validurl.isHttpsUri(url)) {
+        (async () => {
+            try {
+                hashedUrl = await hash(url);
+
+                res.redirect('/blade/' + hashedUrl);
+            } catch (e) {
+                console.error(e);
+                res.status(500).send('There was a problem with the server.');
+            }
+        })();
+    } else {
+        res.send('invalid url');
     }
-
-    (async () => {
-        try {
-            hashedUrl = await hash(url);
-
-            res.redirect('/blade/' + hashedUrl);
-        } catch (e) {
-            console.error(e);
-            res.status(500).send('There was a problem with the server.');
-        }
-
-        
-    })();
 });
 
 const errorHandler = (e: Error, res: express.Response) => {
@@ -119,4 +117,6 @@ const hashToLink = (hash: string, host: string) => {
     return 'http://' + host + '/b/' + hash;
 };
 
-app.listen(process.env.PORT, () => { console.log(`Listening to port ${process.env.PORT}.`); });
+
+const port = process.env.PORT || 3000;
+app.listen(port, () => { console.log(`Listening to port ${port}.`); });
