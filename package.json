@@ -4,8 +4,9 @@
   "description": "URL Shortener",
   "main": "build/index.js",
   "scripts": {
-    "start": "npm install typescript && npm run tsc --module \"commonjs\" --outDir \"build/\" --sourceMap true --target \"es2018\" server/index.ts && node build/index.js",
-    "tsc": "./node_modules/typescript/bin/tsc",
+    "start": "npm run postinstall && node build/index.js",
+    "tsc": "./node_modules/typescript/bin/tsc --module \"commonjs\" --outDir \"build/\" --sourceMap true --target \"es2018\" server/index.ts",
+    "postinstall": "npm install typescript && npm run tsc",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "Drake Main",
@@ -15,7 +16,7 @@
     "@types/express": "^4.16.0",
     "@types/handlebars": "^4.0.39",
     "@types/mongodb": "^3.1.14",
-    "typescript": "^3.1.4"
+    "typescript": "^3.1.6"
   },
   "dependencies": {
     "body-parser": "^1.18.3",
