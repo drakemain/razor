@@ -1,0 +1,1 @@
+web: ./node_modules/.bin/tsc --module "commonjs" --outDir "build/" --sourceMap true --target "es2018" server/index.ts && node build/index.js
