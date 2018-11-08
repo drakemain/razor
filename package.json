@@ -5,7 +5,8 @@
   "main": "build/index.js",
   "scripts": {
     "start": "tsc --module \"commonjs\" --outDir \"build/\" --sourceMap true --target \"es2018\" server/index.ts && node build/index.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "postinstall": "npm install tsc"
   },
   "author": "Drake Main",
   "license": "ISC",
