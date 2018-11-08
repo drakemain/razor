@@ -1,46 +1,103 @@
-import * as querystring from 'querystring';
+import * as path from 'path';
 
 import * as express from 'express';
 import * as bParse from 'body-parser';
+import * as expressHB from 'express-handlebars';
 
-import { hash } from './hash';
+import { hash, getUrl as resHash } from './hash';
+
+// TODO: Use dotenv or config files to set domain and port
+const port = 3000;
+const domain = 'localhost:' + port;
 
 const app = express();
-const port = 3000;
+
+app.engine('handlebars', expressHB({
+    defaultLayout: 'main',
+    layoutsDir: path.resolve('server', 'views', 'layouts'),
+    partialsDir: path.resolve('server', 'views', 'partials')
+}));
+app.set('view engine', 'handlebars');
+app.set('views', path.resolve('server', 'views'));
 
 app.use(bParse.json());
+app.use(bParse.urlencoded({extended: true}));
+app.use(express.static('client'));
 
 app.get('/', (req, res) => {
-    res.send('Hello');
+    app.render('index', (e, html) => {
+        if (e) {
+           errorHandler(e, res);
+        } else {
+            res.send(html);
+        }
+    });
 });
 
-app.post('/sharpen', (req, res) => {
-    const endpoint: string = 'http://localhost:3000/blade';
-    const url: string = req.body.url;
+app.get('/blade/:hash', (req, res) => {
+    const hash: string = req.params.hash;
 
     (async () => {
-        const hashedUrl = await hash(url);
-        const blade = endpoint + '?' + querystring.stringify({url, hash: hashedUrl});
+        const url: string = await resHash(hash);
 
-        console.log(blade);
+        if (!url) {
+            res.status(400).render('dne', undefined, (e, html) => {
+                if (e) {
+                    errorHandler(e, res);
+                } else {
+                    res.send(html);
+                }
+            });
+        } else {
+            const b: string = hashToLink(hash);
 
-        res.redirect(302, blade);
+            res.render('blade', {url, b}, (e, html) => {
+                if (e) {
+                    errorHandler(e, res);
+                } else {
+                    res.send(html);
+                }
+            });
+        }
     })();
 });
 
-app.post('/blade', (req, res) => {
-    const url: string = 'localhost:3000/b/' + req.query.hash;
-    res.send(url);
-});
-
-app.get('/blade', (req, res) => {
-    console.log(req.query);
-    res.send('success');
-});
-
 app.get('/b/:hash', (req, res) => {
-    console.log(req.params.hash);
-    res.send('success');
+    (async () => {
+        const url = await resHash(req.params.hash);
+
+        console.log(`Someone visited ${url}`);
+
+        if (url) {
+            res.redirect(url);
+        } else {
+            res.status(400).send('bad hash');
+        }
+    })();
 });
+
+app.post('/sharpen', (req, res) => {
+    let url: string = req.body.url;
+
+    // TODO: allow for non-http protocols (regex?)
+    if (url.slice(0, 7) !== 'http://' || url.slice(0, 8) !== 'https://') {
+        url = 'http://' + url;
+    }
+
+    (async () => {
+        const hashedUrl = await hash(url);
+        res.redirect('/blade/' + hashedUrl);
+    })();
+});
+
+const errorHandler = (e: Error, res: express.Response) => {
+    console.error(e);
+
+    res.send('ERROR');
+};
+
+const hashToLink = (hash: string) => {
+    return 'http://' + domain + '/b/' + hash;
+};
 
 app.listen(port, () => { console.log(`Listening to port ${port}.`); });
