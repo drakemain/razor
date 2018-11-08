@@ -4,7 +4,8 @@
   "description": "URL Shortener",
   "main": "build/index.js",
   "scripts": {
-    "start": "npm install typescript && tsc --module \"commonjs\" --outDir \"build/\" --sourceMap true --target \"es2018\" server/index.ts && node build/index.js",
+    "start": "npm install typescript && npm run tsc --module \"commonjs\" --outDir \"build/\" --sourceMap true --target \"es2018\" server/index.ts && node build/index.js",
+    "tsc": "./node_modules/typescript/bin/tsc",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "Drake Main",
