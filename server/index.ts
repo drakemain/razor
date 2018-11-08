@@ -33,48 +33,62 @@ app.get('/', (req, res) => {
 
 app.get('/blade/:hash', (req, res) => {
     const hash: string = req.params.hash;
-
+    let url: string;
     (async () => {
-        const url: string = await resHash(hash);
+        try {
+            url = await resHash(hash);
 
-        if (!url) {
-            res.status(400).render('dne', undefined, (e, html) => {
-                if (e) {
-                    errorHandler(e, res);
-                } else {
-                    res.send(html);
-                }
-            });
-        } else {
-            const b: string = hashToLink(hash, req.headers.host);
+            if (!url) {
+                res.status(400).render('dne', undefined, (e, html) => {
+                    if (e) {
+                        errorHandler(e, res);
+                    } else {
+                        res.send(html);
+                    }
+                });
+            } else {
+                const b: string = hashToLink(hash, req.headers.host);
 
-            res.render('blade', {url, b}, (e, html) => {
-                if (e) {
-                    errorHandler(e, res);
-                } else {
-                    res.send(html);
-                }
-            });
+                res.render('blade', {url, b}, (e, html) => {
+                    if (e) {
+                        errorHandler(e, res);
+                    } else {
+                        res.send(html);
+                    }
+                });
+            }
+        } catch (e) {
+            console.error(e);
+            res.status(500).send('There was a problem with the server.');
         }
+
     })();
 });
 
 app.get('/b/:hash', (req, res) => {
+    let url: string;
+
     (async () => {
-        const url = await resHash(req.params.hash);
+        try {
+            url = await resHash(req.params.hash);
 
-        console.log(`Someone visited ${url}`);
+            console.log(`Someone visited ${url}`);
 
-        if (url) {
-            res.redirect(url);
-        } else {
-            res.status(400).send('bad hash');
+            if (url) {
+                res.redirect(url);
+            } else {
+                res.status(400).send('bad hash');
+            }
+        } catch (e) {
+            console.error(e);
+            res.status(500).send('There was a problem with the server.');
         }
     })();
 });
 
 app.post('/sharpen', (req, res) => {
     let url: string = req.body.url;
+    let hashedUrl: string;
 
     // TODO: allow for non-http protocols (regex?)
     if (url.slice(0, 7) !== 'http://' || url.slice(0, 8) !== 'https://') {
@@ -82,8 +96,16 @@ app.post('/sharpen', (req, res) => {
     }
 
     (async () => {
-        const hashedUrl = await hash(url);
-        res.redirect('/blade/' + hashedUrl);
+        try {
+            hashedUrl = await hash(url);
+
+            res.redirect('/blade/' + hashedUrl);
+        } catch (e) {
+            console.error(e);
+            res.status(500).send('There was a problem with the server.');
+        }
+
+        
     })();
 });
 
