@@ -4,7 +4,7 @@
   "description": "URL Shortener",
   "main": "build/index.js",
   "scripts": {
-    "start": "./node_modules/.bin/tsc --module \"commonjs\" --outDir \"build/\" --sourceMap true --target \"es2018\" server/index.ts && node build/index.js",
+    "start": "tsc --module \"commonjs\" --outDir \"build/\" --sourceMap true --target \"es2018\" server/index.ts && node build/index.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "Drake Main",
