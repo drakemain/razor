@@ -6,9 +6,6 @@ import * as expressHB from 'express-handlebars';
 
 import { hash, getUrl as resHash } from './hash';
 
-// TODO: Use dotenv or config files to set domain and port
-const port = 3000;
-
 const app = express();
 
 app.engine('handlebars', expressHB({
@@ -101,4 +98,4 @@ const hashToLink = (hash: string, host: string) => {
     return 'http://' + host + '/b/' + hash;
 };
 
-app.listen(port, () => { console.log(`Listening to port ${port}.`); });
+app.listen(process.env.port, () => { console.log(`Listening to port ${process.env.port}.`); });
