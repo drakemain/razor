@@ -21,15 +21,7 @@ app.use(bParse.json());
 app.use(bParse.urlencoded({extended: true}));
 
 app.get('/', (req, res) => {
-    console.log(req.headers.host);
-
-    app.render('index', (e, html) => {
-        if (e) {
-           errorHandler(e, res);
-        } else {
-            res.send(html);
-        }
-    });
+    genericRender(res, 'index');
 });
 
 app.get('/blade/:hash', (req, res) => {
@@ -40,29 +32,16 @@ app.get('/blade/:hash', (req, res) => {
             url = await resHash(hash);
 
             if (!url) {
-                res.status(400).render('dne', undefined, (e, html) => {
-                    if (e) {
-                        errorHandler(e, res);
-                    } else {
-                        res.send(html);
-                    }
-                });
+                throw new Error('The requested hash does not exist!');
             } else {
                 const b: string = hashToLink(hash, req.headers.host);
-
-                res.render('blade', {url, b}, (e, html) => {
-                    if (e) {
-                        errorHandler(e, res);
-                    } else {
-                        res.send(html);
-                    }
-                });
+                const options = {url, b};
+                genericRender(res, 'blade', options);
             }
-        } catch (e) {
-            console.error(e);
-            res.status(500).send('There was a problem with the server.');
-        }
 
+        } catch (e) {
+            errorHandler(e, res);
+        }
     })();
 });
 
@@ -73,16 +52,13 @@ app.get('/b/:hash', (req, res) => {
         try {
             url = await resHash(req.params.hash);
 
-            console.log(`Someone visited ${url}`);
-
             if (url) {
                 res.redirect(url);
             } else {
-                res.status(400).send('bad hash');
+                throw new Error('Bad hash.');
             }
         } catch (e) {
-            console.error(e);
-            res.status(500).send('There was a problem with the server.');
+            errorHandler(e, res);
         }
     })();
 });
@@ -98,23 +74,41 @@ app.post('/sharpen', (req, res) => {
 
                 res.redirect('/blade/' + hashedUrl);
             } catch (e) {
-                console.error(e);
-                res.status(500).send('There was a problem with the server.');
+                errorHandler(e, res);
             }
         })();
     } else {
-        res.send('invalid url');
+        const e = new Error('An invalid url was submitted!');
+        errorHandler(e, res);
     }
 });
 
 const errorHandler = (e: Error, res: express.Response) => {
     console.error(e);
 
-    res.send('ERROR');
+    res.render('error', {errorMessage: e.message, subtitle: 'Error'},
+    (renderError, html) => {
+        if (renderError) {
+            res.status(500).send('Server error!');
+        } else {
+            res.send(html);
+        }
+    });
 };
 
 const hashToLink = (hash: string, host: string) => {
     return 'http://' + host + '/b/' + hash;
+};
+
+const genericRender = (res: express.Response, template: string, options: object = {}) => {
+    res.render(template, options,
+    (renderError, html) => {
+        if (renderError) {
+            errorHandler(renderError, res);
+        } else {
+            res.send(html);
+        }
+    });
 };
 
 
