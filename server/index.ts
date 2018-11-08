@@ -97,4 +97,4 @@ const hashToLink = (hash: string, host: string) => {
     return 'http://' + host + '/b/' + hash;
 };
 
-app.listen(process.env.port, () => { console.log(`Listening to port ${process.env.port}.`); });
+app.listen(process.env.PORT, () => { console.log(`Listening to port ${process.env.PORT}.`); });
