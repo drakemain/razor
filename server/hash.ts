@@ -1,6 +1,6 @@
 import * as mongo from 'mongodb';
 
-const dbPath = 'mongodb://localhost:27017/razor';
+const dbPath = process.env.DB || 'mongodb://localhost:27017/razor';
 
 export const hash = async (url: string): Promise<string> => {
     const client = await mongo.MongoClient.connect(dbPath, {useNewUrlParser: true});
