@@ -8,7 +8,6 @@ import { hash, getUrl as resHash } from './hash';
 
 // TODO: Use dotenv or config files to set domain and port
 const port = 3000;
-const domain = 'localhost:' + port;
 
 const app = express();
 
@@ -25,6 +24,8 @@ app.use(bParse.urlencoded({extended: true}));
 app.use(express.static('client'));
 
 app.get('/', (req, res) => {
+    console.log(req.headers.host);
+
     app.render('index', (e, html) => {
         if (e) {
            errorHandler(e, res);
@@ -49,7 +50,7 @@ app.get('/blade/:hash', (req, res) => {
                 }
             });
         } else {
-            const b: string = hashToLink(hash);
+            const b: string = hashToLink(hash, req.headers.host);
 
             res.render('blade', {url, b}, (e, html) => {
                 if (e) {
@@ -96,8 +97,8 @@ const errorHandler = (e: Error, res: express.Response) => {
     res.send('ERROR');
 };
 
-const hashToLink = (hash: string) => {
-    return 'http://' + domain + '/b/' + hash;
+const hashToLink = (hash: string, host: string) => {
+    return 'http://' + host + '/b/' + hash;
 };
 
 app.listen(port, () => { console.log(`Listening to port ${port}.`); });
