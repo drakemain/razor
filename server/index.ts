@@ -18,7 +18,6 @@ app.set('views', path.resolve('server', 'views'));
 
 app.use(bParse.json());
 app.use(bParse.urlencoded({extended: true}));
-app.use(express.static('client'));
 
 app.get('/', (req, res) => {
     console.log(req.headers.host);
