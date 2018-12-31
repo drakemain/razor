@@ -6,6 +6,7 @@ import * as expressHB from 'express-handlebars';
 import * as validurl from 'valid-url';
 
 import { hash, getUrl as resHash } from './hash';
+import { clickThrough, hashRequest } from './analytics';
 
 const app = express();
 
@@ -36,6 +37,7 @@ app.get('/blade/:hash', (req, res) => {
             } else {
                 const b: string = hashToLink(hash, req.headers.host);
                 const options = {url, b};
+                hashRequest(hash);
                 genericRender(res, 'blade', options);
             }
 
@@ -53,6 +55,7 @@ app.get('/b/:hash', (req, res) => {
             url = await resHash(req.params.hash);
 
             if (url) {
+                clickThrough(req.params.hash);
                 res.redirect(url);
             } else {
                 throw new Error('Bad hash.');
@@ -71,7 +74,7 @@ app.post('/sharpen', (req, res) => {
         (async () => {
             try {
                 hashedUrl = await hash(url);
-
+                // analytics
                 res.redirect('/blade/' + hashedUrl);
             } catch (e) {
                 errorHandler(e, res);
@@ -91,7 +94,7 @@ const errorHandler = (e: Error, res: express.Response) => {
         if (renderError) {
             res.status(500).send('Server error!');
         } else {
-            res.send(html);
+            res.status(400).send(html);
         }
     });
 };

@@ -1,9 +1,9 @@
-import { fetch, insert } from './db';
+import { fetchUrlEntry, insert } from './db';
 import * as mongo from 'mongodb';
 
 export const hash = async (url: string): Promise<string> => {
     const collectionName = 'urls';
-    const fetchResult = await fetch({url}, collectionName);
+    const fetchResult = await fetchUrlEntry({url}, collectionName);
     let hash: string;
 
     if (!fetchResult) {
@@ -16,6 +16,6 @@ export const hash = async (url: string): Promise<string> => {
 };
 
 export const getUrl = async (hash: string): Promise<string> => {
-    const obj = await fetch({_id: mongo.ObjectID.createFromHexString(hash)}, 'urls');
+    const obj = await fetchUrlEntry({_id: mongo.ObjectID.createFromHexString(hash)}, 'urls');
     return obj.url;
 };
