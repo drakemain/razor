@@ -37,8 +37,8 @@ app.get('/blade/:hash', (req, res) => {
             } else {
                 const b: string = hashToLink(hash, req.headers.host);
                 const options = {url, b};
-                hashRequest(hash);
                 genericRender(res, 'blade', options);
+                hashRequest(hash);
             }
 
         } catch (e) {
@@ -55,8 +55,8 @@ app.get('/b/:hash', (req, res) => {
             url = await resHash(req.params.hash);
 
             if (url) {
-                clickThrough(req.params.hash);
                 res.redirect(url);
+                clickThrough(req.params.hash);
             } else {
                 throw new Error('Bad hash.');
             }
@@ -74,7 +74,6 @@ app.post('/sharpen', (req, res) => {
         (async () => {
             try {
                 hashedUrl = await hash(url);
-                // analytics
                 res.redirect('/blade/' + hashedUrl);
             } catch (e) {
                 errorHandler(e, res);
