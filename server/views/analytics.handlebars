@@ -1,0 +1,14 @@
+<table>
+    <tr>
+        <th>URL</th>
+        <th>Shorten</th>
+        <th>Clicks</th>
+    </tr>
+    {{#each data}}
+        <tr>
+            <td><a href="/b/{{this.hash}}">{{this.url}}</a></td>
+            <td>{{this.hashRequests}}</td>
+            <td>{{this.clicks}}</td>
+        </tr>
+    {{/each}}
+</table>

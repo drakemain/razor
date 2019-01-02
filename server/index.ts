@@ -6,7 +6,7 @@ import * as expressHB from 'express-handlebars';
 import * as validurl from 'valid-url';
 
 import { hash, getUrl as resHash } from './hash';
-import { clickThrough, hashRequest } from './analytics';
+import { clickThrough, hashRequest, getAll } from './analytics';
 import { fetchAnalyticsEntry } from './db';
 
 const app = express();
@@ -26,45 +26,42 @@ app.get('/', (req, res) => {
     genericRender(res, 'index');
 });
 
-app.get('/blade/:hash', (req, res) => {
+app.get('/blade/:hash', async (req, res) => {
     const hash: string = req.params.hash;
     let url: string;
-    (async () => {
-        try {
-            url = await resHash(hash);
 
-            if (!url) {
-                throw new Error('The requested hash does not exist!');
-            } else {
-                const b: string = hashToLink(hash, req.headers.host);
-                const options = {url, b};
-                genericRender(res, 'blade', options);
-                hashRequest(hash);
-            }
+    try {
+        url = await resHash(hash);
 
-        } catch (e) {
-            errorHandler(e, res);
+        if (!url) {
+            throw new Error('The requested hash does not exist!');
+        } else {
+            const b: string = hashToLink(hash, req.headers.host);
+            const options = {url, b};
+            genericRender(res, 'blade', options);
+            hashRequest(hash);
         }
-    })();
+
+    } catch (e) {
+        errorHandler(e, res);
+    }
+
 });
 
-app.get('/b/:hash', (req, res) => {
+app.get('/b/:hash', async (req, res) => {
     let url: string;
+    try {
+        url = await resHash(req.params.hash);
 
-    (async () => {
-        try {
-            url = await resHash(req.params.hash);
-
-            if (url) {
-                res.redirect(url);
-                clickThrough(req.params.hash);
-            } else {
-                throw new Error('Bad hash.');
-            }
-        } catch (e) {
-            errorHandler(e, res);
+        if (url) {
+            res.redirect(url);
+            clickThrough(req.params.hash);
+        } else {
+            throw new Error('Bad hash.');
         }
-    })();
+    } catch (e) {
+        errorHandler(e, res);
+    }
 });
 
 app.post('/sharpen', (req, res) => {
@@ -86,26 +83,30 @@ app.post('/sharpen', (req, res) => {
     }
 });
 
-// app.get('/analytics', (req, res) => {
-    
-// });
+app.get('/analytics', async (req, res) => {
+    try {
+        const data = await getAll();
+        // urlData.forEach((val, i) => {console.log(val, i); });
+        genericRender(res, 'analytics', {subtitle: 'Analytics', data});
+    } catch (e) {
+        errorHandler(e, res);
+    }
+});
 
-app.get('/analytics/hash/:hash', (req, res) => {
+app.get('/analytics/hash/:hash', async (req, res) => {
     const hash: string = req.params.hash;
     console.log(`Get analytics for: ${hash}`);
 
-    (async () => {
-        try {
-            const data = await fetchAnalyticsEntry(hash);
+    try {
+        const data = await fetchAnalyticsEntry(hash);
 
-            res.send({
-                hashRequest: data.hashRequest,
-                clickThrough: data.clickThrough
-            });
-        } catch (e) {
-            errorHandler(e, res);
-        }
-    })();
+        res.send({
+            hashRequest: data.hashRequest,
+            clickThrough: data.clickThrough
+        });
+    } catch (e) {
+        errorHandler(e, res);
+    }
 });
 
 const errorHandler = (e: Error, res: express.Response) => {
