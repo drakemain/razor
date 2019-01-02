@@ -7,6 +7,7 @@ import * as validurl from 'valid-url';
 
 import { hash, getUrl as resHash } from './hash';
 import { clickThrough, hashRequest } from './analytics';
+import { fetchAnalyticsEntry } from './db';
 
 const app = express();
 
@@ -83,6 +84,28 @@ app.post('/sharpen', (req, res) => {
         const e = new Error('An invalid url was submitted!');
         errorHandler(e, res);
     }
+});
+
+// app.get('/analytics', (req, res) => {
+    
+// });
+
+app.get('/analytics/hash/:hash', (req, res) => {
+    const hash: string = req.params.hash;
+    console.log(`Get analytics for: ${hash}`);
+
+    (async () => {
+        try {
+            const data = await fetchAnalyticsEntry(hash);
+
+            res.send({
+                hashRequest: data.hashRequest,
+                clickThrough: data.clickThrough
+            });
+        } catch (e) {
+            errorHandler(e, res);
+        }
+    })();
 });
 
 const errorHandler = (e: Error, res: express.Response) => {

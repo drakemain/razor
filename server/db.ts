@@ -57,11 +57,12 @@ export const updateAnalytics = (schema: AnalyticsSchema, collectionName: string)
     })();
 };
 
-const fetchAnalyticsEntry = async (hash: string, collectionName: string = 'analytics'): Promise<AnalyticsSchema> => {
+export const fetchAnalyticsEntry = async (hash: string, collectionName: string = 'analytics'): Promise<AnalyticsSchema> => {
+    const _id = mongo.ObjectID.createFromHexString(hash);
     const client = await mongo.MongoClient.connect(dbPath, {useNewUrlParser: true});
     const db = client.db();
     const collection = db.collection(collectionName);
-    const result = await collection.findOne({hash});
+    const result = await collection.findOne({_id});
 
     return result;
 };
